@@ -1,0 +1,27 @@
+{
+  "name": "rag",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "nodemon server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@langchain/community": "^0.3.38",
+    "@langchain/core": "^0.3.43",
+    "@langchain/google-genai": "^0.2.1",
+    "@langchain/textsplitters": "^0.1.0",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "langchain": "^0.3.19",
+    "multer": "^1.4.5-lts.2",
+    "nodemon": "^3.1.9",
+    "pdf-parse": "^1.1.1",
+    "pdfjs-dist": "^5.1.91",
+    "tesseract.js": "^6.0.0"
+  }
+}

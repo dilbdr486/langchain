@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>genaiTextGenerator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1 id="header">Gemini Text Generator</h1>
+    <div id="container">
+        <input type="text" name="" id="HumanMessage" placeholder="Enter your message here">
+        <button id="button" onclick="fetchMessage()">Send</button>
+    </div>
+
+    <h2 id="output">response:</h2>
+    <div id="SystemMessage"></div>
+    <div id="conversationHistory"></div>
+    
+    <script>
+        const textInput = document.getElementById("HumanMessage");
+
+        function fetchMessage() {
+            const text = textInput.value; // Extract the value from the input field
+            fetch("http://localhost:3000/api/genai", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text }) // Send the text value
+            })
+            .then(response => response.json())
+            .then(data => {
+                updateConversationHistory(text, data.message);
+                textInput.value = "";
+            })
+            .catch(error => console.error("Error:", error));
+        }
+
+        function updateConversationHistory(userMessage, systemMessage) {
+            const historyDiv = document.getElementById("conversationHistory");
+            const userEntry = document.createElement("p");
+            userEntry.textContent = `You: ${userMessage}`;
+            const systemEntry = document.createElement("p");
+            systemEntry.textContent = `Gemini: ${systemMessage}`;
+            historyDiv.appendChild(userEntry);
+            historyDiv.appendChild(systemEntry);
+        }
+    </script>
+</body>
+</html>
