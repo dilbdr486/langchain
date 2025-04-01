@@ -15,10 +15,13 @@ app.post("/search", async (req, res) => {
         return res.status(400).send("Missing 'url' or 'query' in request body");
     }
     try {
-        const result = await performWebSearch(url, query);
-        res.json({ result });
+        console.log(`Received request with URL: ${url} and Query: ${query}`);
+        const results = await performWebSearch(url, query); // Get the array of results
+        console.log(`Final results:`, results); // Log the final results
+        res.json(results); // Send the results array
     } catch (error) {
-        res.status(500).send("Error performing web search");
+        console.error(`Error: ${error.message}`);
+        res.status(500).send(`Error performing web search: ${error.message}`);
     }
 });
 
