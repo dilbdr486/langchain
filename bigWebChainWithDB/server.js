@@ -12,14 +12,15 @@ app.use(express.json()); // Middleware to parse JSON request bodies
 
 // API to load data into ChromaDB
 app.post("/api/load-data", async (req, res) => {
-    const { url, selectors } = req.body;
+    const { url } = req.body;
     if (!url) {
         return res.status(400).json({ error: "URL is required" });
     }
 
     try {
         console.log(`Processing and storing web content from ${url}...`);
-        await processAndStoreWebContent(url, selectors || ["p"]);
+        // Pass a selector to include all relevant content types
+        await processAndStoreWebContent(url, "li, a, h1, h2, p, ul, ol, form, body *");
         res.status(200).json({ message: "Data successfully loaded into ChromaDB" });
     } catch (error) {
         console.error("Error processing and storing web content:", error);

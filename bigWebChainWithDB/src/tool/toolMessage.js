@@ -8,20 +8,18 @@ import { model } from "../geminiAI/gemini.js";
 import { retrieve } from "./toolRetriever.js"; // Ensure retrieve is imported correctly
 
 export async function queryOrRespond(state) {
-    // Retrieve context from ChromaDB
     const query = state.messages[state.messages.length - 1]?.content || "";
     console.log("Query for ChromaDB retrieval:", query);
 
     const [retrievedContext] = await retrieve({ query });
     console.log("Retrieved Context from ChromaDB:", retrievedContext);
 
-    // Build system message with retrieved context
     const systemMessageContent =
         "You are an assistant for question-answering tasks. " +
         "Use the following pieces of retrieved context to answer " +
         "the question. If you don't know the answer, say that you " +
-        "if can not find the answer from chromadb then say that i don't know. " +
-        "Use three sentences maximum and keep the answer concise." +
+        "cannot find the answer from ChromaDB. Use three sentences maximum " +
+        "and keep the answer concise." +
         "\n\n" +
         `${retrievedContext}`;
 
@@ -39,7 +37,6 @@ export async function queryOrRespond(state) {
 
     console.log("Prompt passed to AI model:", prompt);
 
-    // Invoke the AI model with the prompt
     const response = await model.invoke(prompt);
     return { messages: [response] };
 }
