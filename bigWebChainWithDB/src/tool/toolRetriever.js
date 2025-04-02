@@ -6,7 +6,10 @@ const retrieverSchema = z.object({ query: z.string() });
 
 export const retrieve = tool(
     async ({ query }) => {
+        console.log("Querying ChromaDB with:", query);
         const retrievedDocs = await vectorstores.similaritySearch(query, 2);
+        console.log("Retrieved Documents:", retrievedDocs);
+
         const serializedDocs = retrievedDocs
             .map(
                 (doc) => `source: ${doc.metadata.source}\ncontent: ${doc.pageContent}`

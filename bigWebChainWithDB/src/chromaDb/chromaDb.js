@@ -21,20 +21,20 @@ async function checkChromaConnection() {
     }
 }
 
-// Function to display stored data
+// Function to display all stored data
 export async function displayVectorStoreData() {
     try {
         await checkChromaConnection(); // Ensure connection before proceeding
-        console.log("Fetching vector store data...");
+        console.log("Fetching all vector store data...");
 
-        // Retrieve a few documents from the collection to check if data exists
-        const storedDocuments = await vectorstores.similaritySearch("test", 1);
+        // Use a broad query to fetch all documents
+        const storedDocuments = await vectorstores.similaritySearch("", 1000); // Adjust the limit as needed
         if (storedDocuments.length === 0) {
             console.log("No vectors found in the collection.");
             return;
         }
 
-        console.log("Stored Documents:");
+        console.log("All Stored Documents:");
         storedDocuments.forEach((doc, index) => {
             console.log(`Document ${index + 1}:`);
             console.log(`Content: ${doc.pageContent}`);
