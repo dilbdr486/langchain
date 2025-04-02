@@ -1,5 +1,7 @@
 import { Chroma } from "@langchain/community/vectorstores/chroma";
 import { embeddingModel } from "../embedding/embeddingModel.js";
+import { CheerioWebBaseLoader } from "@langchain/community/document_loaders/web/cheerio"; // Import CheerioWebBaseLoader
+import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters"; // Import RecursiveCharacterTextSplitter
 
 // Initialize ChromaDB connection
 const vectorstores = new Chroma(

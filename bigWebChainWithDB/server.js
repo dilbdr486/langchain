@@ -1,6 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
-import { displayVectorStoreData } from "./src/chromaDb/chromaDb.js";
+import { displayVectorStoreData, clearVectorStoreData } from "./src/chromaDb/chromaDb.js";
 import { processAndStoreWebContent } from "./src/chunks/splitterChain.js";
 import { queryOrRespond } from "./src/tool/toolMessage.js";
 import { HumanMessage } from "@langchain/core/messages";
@@ -62,6 +62,17 @@ app.get("/api/display-data", async (req, res) => {
     } catch (error) {
         console.error("Error displaying vector store data:", error);
         res.status(500).json({ error: "Failed to display vector store data" });
+    }
+});
+
+// API to clear all data from ChromaDB
+app.delete("/api/clear-data", async (req, res) => {
+    try {
+        await clearVectorStoreData();
+        res.status(200).json({ message: "All data cleared from ChromaDB." });
+    } catch (error) {
+        console.error("Error clearing data from ChromaDB:", error);
+        res.status(500).json({ error: "Failed to clear data from ChromaDB." });
     }
 });
 

@@ -46,4 +46,15 @@ export async function displayVectorStoreData() {
     }
 }
 
+// Function to clear all data from ChromaDB
+export async function clearVectorStoreData() {
+    try {
+        console.log("Attempting to delete the collection...");
+        await vectorstores.deleteCollection(); // Deletes the entire collection
+        console.log("Collection deleted successfully. All data cleared from ChromaDB.");
+    } catch (error) {
+        console.error("Error clearing data from ChromaDB:", error);
+    }
+}
+
 export default vectorstores;
