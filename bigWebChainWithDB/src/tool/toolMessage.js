@@ -5,7 +5,7 @@ import {
     ToolMessage,
 } from "@langchain/core/messages";
 import { model } from "../geminiAI/gemini.js";
-import { retrieve } from "./toolRetriever.js"; // Ensure retrieve is imported correctly
+import { retrieve } from "./toolRetriever.js";
 
 export async function queryOrRespond(state) {
     const query = state.messages[state.messages.length - 1]?.content || "";
