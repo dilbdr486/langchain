@@ -9,10 +9,10 @@ import { retrieve } from "./toolRetriever.js"; // Ensure retrieve is imported co
 
 export async function queryOrRespond(state) {
     const query = state.messages[state.messages.length - 1]?.content || "";
-    console.log("Query for ChromaDB retrieval:", query);
+    // console.log("Query for ChromaDB retrieval:", query);
 
     const [retrievedContext] = await retrieve({ query });
-    console.log("Retrieved Context from ChromaDB:", retrievedContext);
+    // console.log("Retrieved Context from ChromaDB:", retrievedContext);
 
     const systemMessageContent =
         "You are an assistant for question-answering tasks. " +
@@ -35,7 +35,7 @@ export async function queryOrRespond(state) {
         ...conversationMessages,
     ];
 
-    console.log("Prompt passed to AI model:", prompt);
+    // console.log("Prompt passed to AI model:", prompt);
 
     const response = await model.invoke(prompt);
     return { messages: [response] };
@@ -75,7 +75,7 @@ export async function generate(state) {
         ...conversationMessages,
     ];
 
-    console.log("Prompt passed to AI model:", prompt);
+    // console.log("Prompt passed to AI model:", prompt);
 
     const response = await model.invoke(prompt);
     return { messages: [response] };
