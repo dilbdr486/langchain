@@ -1,0 +1,20 @@
+{
+  "name": "weaviateembedding",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "nodemon server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "nodemon": "^3.1.9",
+    "weaviate": "^0.0.14",
+    "weaviate-client": "^3.5.0"
+  }
+}
