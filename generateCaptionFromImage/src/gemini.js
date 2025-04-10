@@ -24,7 +24,7 @@ export async function generateCaption(imageBuffer) {
           data: base64Image,
         },
       },
-      "You are a photo captioning assistant. Generate a creative one-liner caption for the given image, along with the image name. Only output the caption and the name, no explanations.",
+      "You are a photo captioning assistant. Generate a creative one-liner caption for the given image, along with the image name. Only output the caption and the name, no explanations and also describe the given image.",
     ]);
 
     const response = await result.response;
