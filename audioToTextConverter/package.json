@@ -16,7 +16,9 @@
     "@langchain/google-genai": "^0.2.3",
     "assemblyai": "^4.9.0",
     "dotenv": "^16.4.7",
+    "elevenlabs": "^1.56.1",
     "express": "^5.1.0",
-    "nodemon": "^3.1.9"
+    "nodemon": "^3.1.9",
+    "uuid": "^11.1.0"
   }
 }
