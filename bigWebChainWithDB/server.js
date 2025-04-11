@@ -4,6 +4,7 @@ import { displayVectorStoreData, clearVectorStoreData } from "./src/chromaDb/chr
 import { processAndStoreWebContent } from "./src/chunks/splitterChain.js";
 import { queryOrRespond } from "./src/tool/toolMessage.js";
 import { HumanMessage } from "@langchain/core/messages";
+import { generate } from "./src/tool/toolMessage.js";
 
 const app = express();
 dotenv.config();
@@ -34,29 +35,34 @@ app.post("/api/load-data", async (req, res) => {
 });
 
 // API to handle human message queries
+// API to handle human message queries
 app.post("/api/query", async (req, res) => {
-  const { message } = req.body;
-  if (!message) {
-      return res.status(400).json({ error: "Message is required" });
-  }
+    const { message } = req.body;
+    if (!message) {
+        return res.status(400).json({ error: "Message is required" });
+    }
 
-  try {
-      console.log(`User Query: ${message}`);
+    try {
+        console.log(`User Query: ${message}`);
 
-      const inputs = { messages: [new HumanMessage(message)] };
-      const response = await queryOrRespond(inputs);
+        const inputs = { messages: [new HumanMessage(message)] };
+        const response = await queryOrRespond(inputs);
 
-      // Extract AI's actual text response
-      const aiMessage = response.messages[0]?.content || "No response from AI";
+        // Step 2: Generate the final answer using the retrieved tool result
+        const finalResponse = await generate(response);
 
-      console.log(`AI Response: ${aiMessage}`);
+        // Extract AI's actual text response
+        const aiMessage = finalResponse.messages[0]?.content || "No response from AI";
 
-      res.status(200).json({ response: aiMessage });
-  } catch (error) {
-      console.error("Error handling human message query:", error);
-      res.status(500).json({ error: "Failed to process the query" });
-  }
+        console.log(`AI Response: ${aiMessage}`);
+
+        res.status(200).json({ response: aiMessage });
+    } catch (error) {
+        console.error("Error handling human message query:", error);
+        res.status(500).json({ error: "Failed to process the query" });
+    }
 });
+
 
 
 // Display vector store data (optional for debugging)
