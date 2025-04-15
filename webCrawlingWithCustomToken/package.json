@@ -1,0 +1,32 @@
+{
+  "name": "bigwebchainwithdb",
+  "version": "1.0.0",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "nodemon server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@langchain/community": "^0.3.38",
+    "@langchain/core": "^0.3.43",
+    "@langchain/google-genai": "^0.2.1",
+    "@langchain/langgraph": "^0.2.62",
+    "@langchain/weaviate": "^0.1.1",
+    "axios": "^1.8.4",
+    "cheerio": "^1.0.0",
+    "chromadb": "^2.1.0",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "gpt-3-encoder": "^1.1.4",
+    "langchain": "^0.3.19",
+    "nodemon": "^3.1.9",
+    "tiktoken-node": "^0.0.7",
+    "uuid": "^11.1.0",
+    "weaviate-client": "^3.5.1",
+    "weaviate-ts-client": "^2.2.0"
+  }
+}
