@@ -1,68 +1,36 @@
-import { AIMessage, HumanMessage, SystemMessage, ToolMessage } from "@langchain/core/messages";
-import { model } from "../geminiAI/gemini.js";
-import { retrieve } from "./toolRetriever.js";
-import { ToolNode } from "@langchain/langgraph/prebuilt";
+import { model } from "../geminiAI/gemini.js"; // LLM model
+import { retrieve } from "./toolRetriever.js"; // Tool function
+import { SystemMessage, HumanMessage } from "@langchain/core/messages"; // ✅ Chat message classes
 
-export async function queryOrRespond(state) {
-  const llmWithTools = model.bindTools([retrieve]);
-  const response = await llmWithTools.invoke(state.messages);
-  return { messages: [response] };
-}
-
-// Step 2: Execute the retrieval.
-export const tools = new ToolNode([retrieve]);
-
-// Step 3: Generate a response using the retrieved content.
-export async function generate(state) {
-  let recentToolMessages = [];
-
-  // Step 1: Collect recent ToolMessages (from the retrieve tool)
-  for (let i = state.messages.length - 1; i >= 0; i--) {
-    let message = state.messages[i];
-    if (message instanceof ToolMessage) {
-      recentToolMessages.push(message);
-    } else {
-      break;
-    }
+export const queryOrRespond = async (message) => {
+  if (!message) {
+    throw new Error("Message content is empty or invalid");
   }
 
-  const toolMessages = recentToolMessages.reverse();
-  const docsContent = toolMessages.map((doc) => doc.content).join("\n");
+  // 🔍 Retrieve context using the tool
+  const queryResponse = await retrieve.invoke({ query: message });
+  console.log("Query response from the tool:", queryResponse.content);
 
-  const systemMessageContent = `
-    You are an assistant for question-answering tasks.
-    Use the following pieces of retrieved context to answer the question.
-    If you don't know the answer, say that you don't know.
-    Use three sentences maximum and keep the answer concise.
-
-    ${docsContent}
-  `.trim();
-
-  // Step 2: Collect relevant conversation messages
-  const conversationMessages = state.messages.filter(
-    (message) =>
-      message instanceof HumanMessage ||
-      message instanceof SystemMessage ||
-      (message instanceof AIMessage && message.tool_calls.length === 0)
-  );
-
-  // ❗️Check if we have at least one valid user message
-  if (conversationMessages.length === 0) {
-    throw new Error("No valid conversation messages found to generate a prompt.");
+  if (!queryResponse.content) {
+    const fallbackResponse = await model.invoke(
+      [new HumanMessage(`I don't have relevant information for "${message}". Please provide a general response.`)]
+    );
+    return fallbackResponse;
   }
 
-  // Step 3: Create full prompt
-  const prompt = [
+  // 🧠 Construct system + user message for contextual answer
+  const systemMessageContent =
+    "You are an assistant for question-answering tasks. " +
+    "Use the following pieces of retrieved context to answer the question. " +
+    "If you don't know the answer, say that you don't know. " +
+    "Use three sentences maximum and keep the answer concise." +
+    "\n\n" +
+    queryResponse.content;
+
+  const finalResponse = await model.invoke([
     new SystemMessage(systemMessageContent),
-    ...conversationMessages,
-  ];
+    new HumanMessage(message),
+  ]);
 
-  // Log the prompt for debugging
-  console.log("Prompt being sent to Gemini:", prompt);
-
-  // Step 4: Invoke Gemini model
-  const response = await model.invoke(prompt);
-
-  return { messages: [response] };
-}
-
+  return finalResponse;
+};
