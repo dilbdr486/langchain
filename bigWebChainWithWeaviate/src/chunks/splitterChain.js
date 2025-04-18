@@ -68,7 +68,7 @@ export async function processAndStoreWebContent(url) {
             allStoredDocs.push(...splitDocs);
         }
 
-        return allStoredDocs;ts
+        return allStoredDocs;
     } catch (error) {
         console.error("Error processing and storing web content:", error);
         throw error;
