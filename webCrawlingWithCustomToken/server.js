@@ -1,13 +1,11 @@
 import express from "express";
 import dotenv from "dotenv";
-import {
-  displayVectorStoreData,
-  clearVectorStoreData,
-} from "./src/weaviateDb/weaviateDb.js";
 import { processAndStoreWebContent } from "./src/chunks/splitterChain.js";
 import { queryOrRespond } from "./src/tool/toolMessage.js";
 import { HumanMessage } from "@langchain/core/messages";
 import { encode, decode } from "gpt-3-encoder";
+import { tokenLog } from "./src/models/tokenModel.js";
+import { connectDb } from "./src/config/db.js";
 
 const app = express();
 dotenv.config();
@@ -36,10 +34,11 @@ app.post("/api/load-data", async (req, res) => {
   }
 });
 
+connectDb();
+
 const MAX_QUERY_TOKENS = 100;
 const MAX_RESPONSE_TOKENS = 2000;
 
-// API to handle human message queries
 app.post("/api/query", async (req, res) => {
   const { message } = req.body;
 
@@ -50,10 +49,8 @@ app.post("/api/query", async (req, res) => {
   try {
     console.log(`User Query: ${message}`);
 
-    // ✅ Tokenize the user message
     const queryTokens = encode(message);
     const queryTokenCount = queryTokens.length;
-    console.log(`Query Tokens: ${queryTokenCount}`);
 
     if (queryTokenCount > MAX_QUERY_TOKENS) {
       return res.status(400).json({
@@ -61,63 +58,81 @@ app.post("/api/query", async (req, res) => {
       });
     }
 
-    // Run through your LangChain logic (RAG, etc.)
     const inputs = { messages: [new HumanMessage(message)] };
     const response = await queryOrRespond(inputs);
 
     const aiMessage = response.messages[0]?.content || "No response from AI";
-    console.log(`AI Response: ${aiMessage}`);
-
-    // ✅ Tokenize response for stats or chunking
     const responseTokens = encode(aiMessage);
     const responseTokenCount = responseTokens.length;
-    console.log(`Response Tokens: ${responseTokenCount}`);
 
     let finalResponse = aiMessage;
 
-    // Optionally truncate long response
     if (responseTokenCount > MAX_RESPONSE_TOKENS) {
       const trimmedTokens = responseTokens.slice(0, MAX_RESPONSE_TOKENS);
       finalResponse = decode(trimmedTokens) + "\n\n[Response truncated]";
     }
 
-    // You could also split into chunks if needed:
-    // const chunks = splitByTokens(aiMessage, 500);
+    // ✅ Token and Cost Calculations
+    const totalTokens = queryTokenCount + responseTokenCount;
 
+    const COST_PER_INPUT_TOKEN = 2;
+    const COST_PER_OUTPUT_TOKEN = 3;
+
+    const inputCost = queryTokenCount * COST_PER_INPUT_TOKEN;
+    const outputCost = responseTokenCount * COST_PER_OUTPUT_TOKEN;
+    const totalCost = inputCost + outputCost;
+
+    // ✅ Save to MongoDB
+    await tokenLog.create({
+      message,
+      input_tokens: queryTokenCount,
+      ai_response: finalResponse,
+      output_tokens: responseTokenCount,
+      total_tokens: totalTokens,
+      cost: totalCost,
+    });
+
+    // ✅ Aggregate overall token usage
+    const tokenSums = await tokenLog.aggregate([
+      {
+        $group: {
+          _id: null,
+          total_input_tokens: { $sum: "$input_tokens" },
+          total_output_tokens: { $sum: "$output_tokens" },
+        },
+      },
+    ]);
+
+    const totalInputTokenSum = tokenSums[0]?.total_input_tokens || 0;
+    const totalOutputTokenSum = tokenSums[0]?.total_output_tokens || 0;
+    const totalCombinedTokens = totalInputTokenSum + totalOutputTokenSum;
+    const totalSpentCost =
+      totalInputTokenSum * COST_PER_INPUT_TOKEN +
+      totalOutputTokenSum * COST_PER_OUTPUT_TOKEN;
+
+    // ✅ Final Response
     res.status(200).json({
       response: finalResponse,
       token_stats: {
         input_tokens: queryTokenCount,
         output_tokens: responseTokenCount,
+        total_tokens: totalTokens,
+      },
+      cost: {
+        input_cost: `Rs ${inputCost.toFixed(4)}`,
+        output_cost: `Rs ${outputCost.toFixed(4)}`,
+        total_cost: `Rs ${totalCost.toFixed(4)}`,
+      },
+      token_sums_overall: {
+        total_input_tokens: totalInputTokenSum,
+        total_output_tokens: totalOutputTokenSum,
+        total_combined_tokens: totalCombinedTokens,
+        total_cost_spent: totalSpentCost,
       },
     });
   } catch (error) {
     console.error("Error handling human message query:", error);
     res.status(500).json({ error: "Failed to process the query" });
-  }
-});
-
-app.get("/api/display-data", async (req, res) => {
-  try {
-    console.log("Fetching vector store data...");
-    await displayVectorStoreData();
-    res
-      .status(200)
-      .json({ message: "Vector store data displayed in the console" });
-  } catch (error) {
-    console.error("Error displaying vector store data:", error);
-    res.status(500).json({ error: "Failed to display vector store data" });
-  }
-});
-
-// API to clear all data from ChromaDB
-app.delete("/api/clear-data", async (req, res) => {
-  try {
-    await clearVectorStoreData();
-    res.status(200).json({ message: "All data cleared from ChromaDB." });
-  } catch (error) {
-    console.error("Error clearing data from ChromaDB:", error);
-    res.status(500).json({ error: "Failed to clear data from ChromaDB." });
   }
 });
 
